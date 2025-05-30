@@ -1,0 +1,181 @@
+import { useState, useEffect } from 'react'
+import { Button } from "/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "/components/ui/card"
+import { Input } from "/components/ui/input"
+import { ArrowLeftRight } from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "/components/ui/select"
+
+// Comprehensive list of world currencies with sample exchange rates (relative to USD)
+const allCurrencies = [
+  { code: 'USD', name: 'US Dollar', rate: 1 },
+  { code: 'EUR', name: 'Euro', rate: 0.93 },
+  { code: 'GBP', name: 'British Pound', rate: 0.79 },
+  { code: 'JPY', name: 'Japanese Yen', rate: 151.42 },
+  { code: 'AUD', name: 'Australian Dollar', rate: 1.52 },
+  { code: 'CAD', name: 'Canadian Dollar', rate: 1.36 },
+  { code: 'CHF', name: 'Swiss Franc', rate: 0.91 },
+  { code: 'CNY', name: 'Chinese Yuan', rate: 7.24 },
+  { code: 'INR', name: 'Indian Rupee', rate: 76.89 },
+  { code: 'MXN', name: 'Mexican Peso', rate: 16.68 },
+  { code: 'BRL', name: 'Brazilian Real', rate: 5.05 },
+  { code: 'RUB', name: 'Russian Ruble', rate: 92.45 },
+  { code: 'ZAR', name: 'South African Rand', rate: 18.72 },
+  { code: 'AED', name: 'UAE Dirham', rate: 3.67 },
+  { code: 'ARS', name: 'Argentine Peso', rate: 857.50 },
+  { code: 'BGN', name: 'Bulgarian Lev', rate: 1.82 },
+  { code: 'CLP', name: 'Chilean Peso', rate: 937.50 },
+  { code: 'COP', name: 'Colombian Peso', rate: 3916.50 },
+  { code: 'CZK', name: 'Czech Koruna', rate: 23.42 },
+  { code: 'DKK', name: 'Danish Krone', rate: 6.92 },
+  { code: 'HKD', name: 'Hong Kong Dollar', rate: 7.83 },
+  { code: 'HUF', name: 'Hungarian Forint', rate: 360.80 },
+  { code: 'IDR', name: 'Indonesian Rupiah', rate: 15872.50 },
+  { code: 'ILS', name: 'Israeli Shekel', rate: 3.72 },
+  { code: 'KRW', name: 'South Korean Won', rate: 1342.75 },
+  { code: 'MYR', name: 'Malaysian Ringgit', rate: 4.74 },
+  { code: 'NOK', name: 'Norwegian Krone', rate: 10.68 },
+  { code: 'NZD', name: 'New Zealand Dollar', rate: 1.66 },
+  { code: 'PEN', name: 'Peruvian Sol', rate: 3.72 },
+  { code: 'PHP', name: 'Philippine Peso', rate: 56.42 },
+  { code: 'PLN', name: 'Polish Zloty', rate: 4.02 },
+  { code: 'RON', name: 'Romanian Leu', rate: 4.59 },
+  { code: 'SEK', name: 'Swedish Krona', rate: 10.58 },
+  { code: 'SGD', name: 'Singapore Dollar', rate: 1.35 },
+  { code: 'THB', name: 'Thai Baht', rate: 36.52 },
+  { code: 'TRY', name: 'Turkish Lira', rate: 32.04 },
+  { code: 'TWD', name: 'New Taiwan Dollar', rate: 32.02 },
+  { code: 'UAH', name: 'Ukrainian Hryvnia', rate: 38.42 },
+  { code: 'VND', name: 'Vietnamese Dong', rate: 24750.00 },
+]
+
+export default function CurrencyConverter() {
+  const [amount, setAmount] = useState<string>('1')
+  const [fromCurrency, setFromCurrency] = useState<string>('USD')
+  const [toCurrency, setToCurrency] = useState<string>('EUR')
+  const [convertedAmount, setConvertedAmount] = useState<string>('0.93')
+
+  // Initialize with default conversion
+  useEffect(() => {
+    convertCurrency('1', 'USD', 'EUR')
+  }, [])
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    // Only allow numbers and one decimal point
+    if (/^\d*\.?\d*$/.test(value)) {
+      setAmount(value)
+      convertCurrency(value, fromCurrency, toCurrency)
+    }
+  }
+
+  const convertCurrency = (value: string, from: string, to: string) => {
+    if (!value || isNaN(Number(value))) {
+      setConvertedAmount('0')
+      return
+    }
+
+    const numericAmount = parseFloat(value)
+    const fromCurrencyData = allCurrencies.find(c => c.code === from)
+    const toCurrencyData = allCurrencies.find(c => c.code === to)
+
+    if (fromCurrencyData && toCurrencyData) {
+      const result = (numericAmount / fromCurrencyData.rate) * toCurrencyData.rate
+      setConvertedAmount(result.toFixed(2))
+    }
+  }
+
+  const handleFromCurrencyChange = (value: string) => {
+    setFromCurrency(value)
+    convertCurrency(amount, value, toCurrency)
+  }
+
+  const handleToCurrencyChange = (value: string) => {
+    setToCurrency(value)
+    convertCurrency(amount, fromCurrency, value)
+  }
+
+  const swapCurrencies = () => {
+    setFromCurrency(toCurrency)
+    setToCurrency(fromCurrency)
+    convertCurrency(amount, toCurrency, fromCurrency)
+  }
+
+  return (
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold">Currency Converter</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-col space-y-2">
+          <label className="text-sm font-medium">Amount</label>
+          <Input
+            type="text"
+            value={amount}
+            onChange={handleAmountChange}
+            placeholder="Enter amount"
+          />
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <div className="flex-1">
+            <label className="text-sm font-medium">From</label>
+            <Select value={fromCurrency} onValueChange={handleFromCurrencyChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select currency" />
+              </SelectTrigger>
+              <SelectContent className="max-h-[300px] overflow-y-auto">
+                {allCurrencies.map((currency) => (
+                  <SelectItem key={`from-${currency.code}`} value={currency.code}>
+                    {currency.code} - {currency.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={swapCurrencies}
+            className="mt-5"
+            aria-label="Swap currencies"
+          >
+            <ArrowLeftRight className="h-4 w-4" />
+          </Button>
+
+          <div className="flex-1">
+            <label className="text-sm font-medium">To</label>
+            <Select value={toCurrency} onValueChange={handleToCurrencyChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select currency" />
+              </SelectTrigger>
+              <SelectContent className="max-h-[300px] overflow-y-auto">
+                {allCurrencies.map((currency) => (
+                  <SelectItem key={`to-${currency.code}`} value={currency.code}>
+                    {currency.code} - {currency.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="mt-6 p-4 bg-muted rounded-lg">
+          <div className="text-sm text-muted-foreground">Converted Amount</div>
+          <div className="text-2xl font-bold">
+            {convertedAmount} {toCurrency}
+          </div>
+          <div className="text-sm text-muted-foreground mt-1">
+            {amount} {fromCurrency} = {convertedAmount} {toCurrency}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
