@@ -1,0 +1,208 @@
+import { useState, useEffect } from 'react';
+import { Search, CloudSun, CloudRain, Sun, Cloud, Droplets, Thermometer, Wind, Loader2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from "/components/ui/card";
+import { Button } from "/components/ui/button";
+import { Input } from "/components/ui/input";
+
+// Mock data simulating Vijayawada's weather patterns
+const getVijayawadaWeather = () => {
+  const now = new Date();
+  const month = now.getMonth();
+  const hour = now.getHours();
+  
+  // Summer (March-June)
+  if (month >= 2 && month <= 5) {
+    return {
+      temp: 36 + Math.floor(Math.random() * 6), // 36-42°C
+      humidity: 50 + Math.floor(Math.random() * 20), // 50-70%
+      condition: hour > 18 || hour < 6 ? 'Warm Night' : 'Hot',
+      wind: 10 + Math.floor(Math.random() * 8), // 10-18 km/h
+      airQuality: 'Moderate',
+      feelsLike: 38 + Math.floor(Math.random() * 5), // 38-43°C
+      advice: 'Stay hydrated and avoid direct sun in afternoon'
+    };
+  }
+  
+  // Monsoon (July-September)
+  if (month >= 6 && month <= 8) {
+    return {
+      temp: 30 + Math.floor(Math.random() * 4), // 30-34°C
+      humidity: 75 + Math.floor(Math.random() * 20), // 75-95%
+      condition: Math.random() > 0.6 ? 'Heavy Rain' : 'Humid',
+      wind: 15 + Math.floor(Math.random() * 10), // 15-25 km/h
+      airQuality: 'Good',
+      feelsLike: 34 + Math.floor(Math.random() * 3), // 34-37°C
+      advice: 'Carry umbrella and be cautious of waterlogging'
+    };
+  }
+  
+  // Winter (October-February)
+  return {
+    temp: 22 + Math.floor(Math.random() * 8), // 22-30°C
+    humidity: 70 + Math.floor(Math.random() * 25), // 70-95%
+    condition: hour > 19 || hour < 6 ? 'Cool Night' : 'Pleasant',
+    wind: 8 + Math.floor(Math.random() * 6), // 8-14 km/h
+    airQuality: 'Moderate',
+    feelsLike: 24 + Math.floor(Math.random() * 4), // 24-28°C
+    advice: 'Perfect weather for outdoor activities'
+  };
+};
+
+export default function VijayawadaWeather() {
+  const [city, setCity] = useState('Vijayawada');
+  const [weather, setWeather] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [time, setTime] = useState(new Date());
+
+  useEffect(() => {
+    // Simulate API call delay
+    const timer = setTimeout(() => {
+      setWeather(getVijayawadaWeather());
+      setLoading(false);
+    }, 800);
+
+    // Update time every minute
+    const clockTimer = setInterval(() => setTime(new Date()), 60000);
+    
+    return () => {
+      clearTimeout(timer);
+      clearInterval(clockTimer);
+    };
+  }, [city]);
+
+  const handleCityChange = (newCity: string) => {
+    setLoading(true);
+    setCity(newCity);
+    // In a real app, this would fetch new city data
+    setTimeout(() => {
+      setWeather(getVijayawadaWeather());
+      setLoading(false);
+    }, 800);
+  };
+
+  const getWeatherIcon = () => {
+    if (!weather) return <CloudSun className="w-16 h-16" />;
+    
+    if (weather.condition.includes('Rain')) return <CloudRain className="w-16 h-16" />;
+    if (weather.condition.includes('Hot') || weather.condition.includes('Pleasant')) return <Sun className="w-16 h-16" />;
+    if (weather.condition.includes('Humid') || weather.condition.includes('Cool')) return <Droplets className="w-16 h-16" />;
+    return <CloudSun className="w-16 h-16" />;
+  };
+
+  const getAirQualityColor = () => {
+    if (!weather) return 'bg-gray-200';
+    switch (weather.airQuality) {
+      case 'Good': return 'bg-green-100 text-green-800';
+      case 'Moderate': return 'bg-yellow-100 text-yellow-800';
+      case 'Poor': return 'bg-orange-100 text-orange-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-4 md:p-8">
+      <Card className="max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center">Andhra Pradesh Weather</CardTitle>
+          <div className="text-center text-sm text-gray-500">
+            {time.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} • {time.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex gap-2">
+            <Button 
+              variant={city === 'Vijayawada' ? 'default' : 'outline'} 
+              onClick={() => handleCityChange('Vijayawada')}
+            >
+              Vijayawada
+            </Button>
+            <Button 
+              variant={city === 'Visakhapatnam' ? 'default' : 'outline'} 
+              onClick={() => handleCityChange('Visakhapatnam')}
+            >
+              Visakhapatnam
+            </Button>
+            <Button 
+              variant={city === 'Tirupati' ? 'default' : 'outline'} 
+              onClick={() => handleCityChange('Tirupati')}
+            >
+              Tirupati
+            </Button>
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+          ) : weather ? (
+            <>
+              <div className="bg-blue-50 rounded-lg p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold">{city}</h2>
+                    <p className="text-gray-600">Andhra Pradesh</p>
+                    <p className="text-gray-600 capitalize">{weather.condition}</p>
+                  </div>
+                  {getWeatherIcon()}
+                </div>
+
+                <div className="mt-6 grid grid-cols-2 gap-4">
+                  <div className="bg-white p-4 rounded-lg flex items-center">
+                    <Thermometer className="w-8 h-8 mr-2 text-blue-500" />
+                    <div>
+                      <p className="text-gray-500">Temperature</p>
+                      <p className="text-2xl font-bold">{weather.temp}°C</p>
+                    </div>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg flex items-center">
+                    <Droplets className="w-8 h-8 mr-2 text-blue-500" />
+                    <div>
+                      <p className="text-gray-500">Humidity</p>
+                      <p className="text-2xl font-bold">{weather.humidity}%</p>
+                    </div>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg flex items-center">
+                    <Wind className="w-8 h-8 mr-2 text-blue-500" />
+                    <div>
+                      <p className="text-gray-500">Wind Speed</p>
+                      <p className="text-2xl font-bold">{weather.wind} km/h</p>
+                    </div>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg">
+                    <p className="text-gray-500">Feels Like</p>
+                    <p className="text-2xl font-bold">{weather.feelsLike}°C</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 space-y-2">
+                  <div>
+                    <p className="text-gray-500 mb-1">Air Quality</p>
+                    <div className={`${getAirQualityColor()} px-3 py-2 rounded-md font-medium`}>
+                      {weather.airQuality}
+                    </div>
+                  </div>
+                  <div className="bg-yellow-50 border-l-4 border-yellow-400 p-2">
+                    <p className="text-yellow-700 text-sm">{weather.advice}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-sm text-gray-500">
+                <h3 className="font-medium mb-1">Regional Weather Notes:</h3>
+                <p className="text-xs">
+                  {city === 'Vijayawada' ? '🌉 Known for its hot summers and Krishna river breeze' :
+                   city === 'Visakhapatnam' ? '🏖️ Coastal city with higher humidity and sea breezes' :
+                   '⛰️ Hill city with relatively cooler temperatures'}
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              Weather data unavailable
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
